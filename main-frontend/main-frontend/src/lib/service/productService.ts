@@ -17,6 +17,7 @@ export interface Product {
 }
 
 export interface CreateProductInput {
+  sellerId?: string;
   name: string;
   price: number;
   stock: number;
@@ -27,7 +28,7 @@ export interface CreateProductInput {
 // Get all products for logged-in seller
 export const getProducts = async (): Promise<Product[]> => {
   const res = await api.get('/products');
-  return res.data.data;
+  return Array.isArray(res.data?.data) ? res.data.data : [];
 };
 
 // Get single product

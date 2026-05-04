@@ -37,6 +37,28 @@ const Product = {
     if (error) throw error;
     return data;
   },
+  async decrementStock(id, quantity = 1) {
+    const product = await this.findById(id);
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    const nextStock = Math.max(0, Number(product.stock || 0) - Number(quantity || 0));
+
+    const { data, error } = await supabase
+      .from('products')
+      .update({
+        stock: nextStock,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
   async delete(id) {
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) throw error;

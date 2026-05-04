@@ -62,9 +62,11 @@ export default function ProductsPage() {
     try {
       setLoading(true);
       const data = await getProducts();
-      setProducts(data);
+      setProducts(Array.isArray(data) ? data : []);
       setError(null);
     } catch (err) {
+      setProducts([]);
+      setFilteredProducts([]);
       setError('Failed to load products. Please try again later.');
       console.error('Error fetching products:', err);
     } finally {
@@ -75,7 +77,7 @@ export default function ProductsPage() {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'KSH',
     }).format(price);
   };
 

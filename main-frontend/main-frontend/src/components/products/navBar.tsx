@@ -12,7 +12,12 @@ const ProductNavbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const handleSellClick = () => {
-    router.push('/products/add-product');
+    if (isSignedIn) {
+      router.push('/products/add-product');
+      return;
+    }
+
+    router.push('/sign-in?redirect_url=/products/add-product');
   };
 
   return (
@@ -22,7 +27,7 @@ const ProductNavbar = () => {
 
           {/* Logo Section */}
           <div className="flex items-center">
-            <Link href="/products" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2">
               <div className="bg-blue-500 p-2 rounded-lg">
                 <Package className="h-5 w-5 text-white" />
               </div>
@@ -37,7 +42,7 @@ const ProductNavbar = () => {
 
             {/* Home Link */}
             <Link
-              href="/products"
+              href="/"
               className="hidden sm:flex p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
             >
               <Home className="h-5 w-5" />
@@ -61,7 +66,7 @@ const ProductNavbar = () => {
                     <UserButton /> {/* ← removed broken afterSignOutUrl prop */}
                     {/* Custom sign out button with guaranteed redirect */}
                     <button
-                      onClick={() => signOut(() => router.push('/products'))} // ← redirect callback
+                      onClick={() => signOut(() => router.push('/'))} // ← redirect callback
                       className="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
                     >
                       <LogOut className="h-4 w-4 mr-1" />
@@ -104,7 +109,7 @@ const ProductNavbar = () => {
               {/* Mobile sign out */}
               {isLoaded && isSignedIn && (
                 <button
-                  onClick={() => signOut(() => router.push('/products'))} // ← same callback on mobile
+                  onClick={() => signOut(() => router.push('/'))} // ← same callback on mobile
                   className="flex items-center px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-500 transition-colors rounded-lg"
                 >
                   <LogOut className="h-5 w-5 mr-3" />
@@ -114,7 +119,7 @@ const ProductNavbar = () => {
 
               {isLoaded && !isSignedIn && (
                 <Link
-                  href="/sign-in"
+                  href="/sign-in?redirect_url=/products/add-product"
                   className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >

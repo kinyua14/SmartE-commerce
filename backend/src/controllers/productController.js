@@ -1,6 +1,14 @@
 // src/controllers/productController.js
 import supabase from '../config/database.js';
 
+const getAuthUserId = (req) => {
+  try {
+    return req.auth?.()?.userId || null;
+  } catch {
+    return null;
+  }
+};
+
 // GET /api/products — all products (optionally filtered)
 export const getProducts = async (req, res) => {
   try {
@@ -52,9 +60,11 @@ export const getProductById = async (req, res) => {
 // POST /api/products — create product
 export const createProduct = async (req, res) => {
   try {
+    const authUserId = getAuthUserId(req);
     const { sellerId, name, price, stock, description, images } = req.body;
+    const ownerId = authUserId || sellerId;
 
-    if (!sellerId) return res.status(400).json({ success: false, message: 'sellerId is required' });
+    if (!ownerId) return res.status(400).json({ success: false, message: 'sellerId is required' });
     if (!name) return res.status(400).json({ success: false, message: 'Product name is required' });
     if (!price || price <= 0) return res.status(400).json({ success: false, message: 'Valid price is required' });
     if (stock === undefined || stock < 0) return res.status(400).json({ success: false, message: 'Valid stock quantity is required' });
@@ -62,7 +72,7 @@ export const createProduct = async (req, res) => {
     const { data, error } = await supabase
       .from('products')
       .insert([{
-        seller_id: sellerId,
+        seller_id: ownerId,
         name,
         price,
         stock,
@@ -85,6 +95,21 @@ export const createProduct = async (req, res) => {
 // PUT /api/products/:id — update product
 export const updateProduct = async (req, res) => {
   try {
+    const authUserId = getAuthUserId(req);
+    const { data: existingProduct, error: existingError } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (existingError || !existingProduct) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    if (authUserId && existingProduct.seller_id !== authUserId) {
+      return res.status(403).json({ success: false, message: 'Only the product owner can edit this product' });
+    }
+
     const updates = { ...req.body, updated_at: new Date() };
 
     // Map camelCase from frontend to snake_case for Supabase
@@ -114,6 +139,21 @@ export const updateProduct = async (req, res) => {
 // DELETE /api/products/:id — delete product
 export const deleteProduct = async (req, res) => {
   try {
+    const authUserId = getAuthUserId(req);
+    const { data: existingProduct, error: existingError } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (existingError || !existingProduct) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    if (authUserId && existingProduct.seller_id !== authUserId) {
+      return res.status(403).json({ success: false, message: 'Only the product owner can delete this product' });
+    }
+
     const { data, error } = await supabase
       .from('products')
       .delete()

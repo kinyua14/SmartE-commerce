@@ -11,13 +11,20 @@ const getUser = async (clerkId) => {
 };
 
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
+const FRONTEND_URL = process.env.FRONTEND_URL;
+
+const buildProductUrl = (productId) => {
+  if (!FRONTEND_URL || !productId) return null;
+  const baseUrl = FRONTEND_URL.endsWith('/') ? FRONTEND_URL.slice(0, -1) : FRONTEND_URL;
+  return `${baseUrl}/products/${productId}`;
+};
 
 export const postToN8n = async (req, res) => {
   console.log('🔥 postToN8n hit — body:', req.body);
   console.log('🔥 auth:', req.auth);
 
   try {
-    const auth   = req.auth;
+    const auth   = req.auth();   // ← fixed: added parentheses
     const userId = auth?.userId;
 
     console.log('🔥 userId:', userId);
@@ -38,9 +45,11 @@ export const postToN8n = async (req, res) => {
 
     const imageUrls    = (product.images || []).filter(url => url && url.trim() !== '');
     const primaryImage = imageUrls[0] || null;
+    const productUrl   = buildProductUrl(product.id);
 
     const n8nPayload = {
       productId:          product.id,
+      productUrl:         productUrl,
       productName:        product.name,
       productPrice:       product.price,
       productStock:       product.stock,
@@ -82,6 +91,7 @@ export const postToN8n = async (req, res) => {
       message: 'Product posted to n8n successfully',
       data: {
         productId:    product.id,
+        productUrl:   productUrl,
         productName:  product.name,
         primaryImage: primaryImage,
         n8nResponse:  n8nResponse.data
@@ -98,7 +108,7 @@ export const postToN8n = async (req, res) => {
 
 export const testN8nConnection = async (req, res) => {
   try {
-    const auth   = req.auth;
+    const auth   = req.auth();   // ← fixed: added parentheses
     const userId = auth?.userId;
     if (!userId) return res.status(401).json({ success: false, message: "User not authenticated" });
 
@@ -139,7 +149,7 @@ export const testN8nConnection = async (req, res) => {
 
 export const getN8nStatus = async (req, res) => {
   try {
-    const auth   = req.auth;
+    const auth   = req.auth();   // ← fixed: added parentheses
     const userId = auth?.userId;
     if (!userId) return res.status(401).json({ success: false, message: "User not authenticated" });
 
