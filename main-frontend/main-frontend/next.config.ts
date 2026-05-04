@@ -5,7 +5,6 @@ const nextConfig: NextConfig = {
     if (process.env.NODE_ENV !== 'development') {
       return [];
     }
-
     return [
       {
         source: '/api/:path*',
@@ -14,7 +13,7 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    unoptimized: process.env.NODE_ENV === 'development', // ✅ Fixes private IP error in dev
+    unoptimized: process.env.NODE_ENV === 'development',
     remotePatterns: [
       {
         protocol: 'https',
@@ -25,6 +24,12 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '**.cloudfront.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
         port: '',
         pathname: '/**',
       },
