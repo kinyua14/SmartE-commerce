@@ -1,15 +1,15 @@
 //app/onboarding/page.tsx
 'use client';
 import { useUser } from '@clerk/nextjs';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const redirectUrl = searchParams.get('redirect_url') || '/products';  // ← updated
+  const redirectUrl = searchParams.get('redirect_url') || '/products';
 
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
@@ -143,5 +143,17 @@ export default function OnboardingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 flex items-center justify-center">
+        <p className="text-white">Loading...</p>
+      </div>
+    }>
+      <OnboardingContent />
+    </Suspense>
   );
 }
